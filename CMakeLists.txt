@@ -25,7 +25,7 @@ set(SOURCE_FILES src/main.cpp)
 configure_file(src/shaders/vert.glsl ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 configure_file(src/shaders/frag.glsl ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${RES_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE lglad glfw glm::glm)
