@@ -3,17 +3,17 @@
 #include <glm/glm.hpp>
 #include <stb_image.h>
 
-#include <iostream>
-#include <string>
-#include <sstream>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
-GLuint LoadShaders(const char * vertex_sp,const char * fragment_sp);
+GLuint LoadShaders(const char *vertex_sp, const char *fragment_sp);
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 800;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 int main() {
     glfwInit();
@@ -25,7 +25,8 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "renegl", NULL, NULL);
+    GLFWwindow *window =
+        glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "renegl", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -40,18 +41,18 @@ int main() {
         return -1;
     }
 
-    GLuint shader = LoadShaders("vert.glsl","frag.glsl");
+    GLuint shader = LoadShaders("vert.glsl", "frag.glsl");
 
     // setup data and buffers
 
     float vertices[] = {
-        -1.0f, -1.0f, 0.0f,  // lb
-        1.0f, -1.0f, 0.0f,  // rb
-        -1.0f, 1.0f, 0.0f,  // lt
+        -1.0f, -1.0f, 0.0f, // lb
+        1.0f,  -1.0f, 0.0f, // rb
+        -1.0f, 1.0f,  0.0f, // lt
 
-        1.0f, 1.0f, 0.0f,  // rt
-        -1.0f, 1.0f, 0.0f,  // lt
-        1.0f, -1.0f, 0.0f,  // rb
+        1.0f,  1.0f,  0.0f, // rt
+        -1.0f, 1.0f,  0.0f, // lt
+        1.0f,  -1.0f, 0.0f, // rb
     };
 
     unsigned int VBO, VAO;
@@ -66,7 +67,8 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // set attrib
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                          (void *)0);
     glEnableVertexAttribArray(0);
 
     // unbind
@@ -116,16 +118,16 @@ void processInput(GLFWwindow *window) {
         glfwSetWindowShouldClose(window, true);
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-GLuint LoadShaders(const char * vertex_sp,const char * fragment_sp) {
+GLuint LoadShaders(const char *vertex_sp, const char *fragment_sp) {
     // READ
     std::string vertexCode, fragmentCode;
     std::ifstream vShaderFile, fShaderFile;
-    vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-    fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try {
         vShaderFile.open(vertex_sp);
         fShaderFile.open(fragment_sp);
@@ -134,15 +136,14 @@ GLuint LoadShaders(const char * vertex_sp,const char * fragment_sp) {
         fShaderStream << fShaderFile.rdbuf();
         vShaderFile.close();
         fShaderFile.close();
-        vertexCode   = vShaderStream.str();
+        vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
-    }
-    catch(std::ifstream::failure e) {
+    } catch (std::ifstream::failure e) {
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
         return 0;
     }
-    const char* vShaderCode = vertexCode.c_str();
-    const char* fShaderCode = fragmentCode.c_str();
+    const char *vShaderCode = vertexCode.c_str();
+    const char *fShaderCode = fragmentCode.c_str();
 
     // BUILD AND COMPILE
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER); // vert
@@ -153,7 +154,8 @@ GLuint LoadShaders(const char * vertex_sp,const char * fragment_sp) {
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+                  << infoLog << std::endl;
         return 0;
     }
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER); // frag
@@ -162,7 +164,8 @@ GLuint LoadShaders(const char * vertex_sp,const char * fragment_sp) {
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+                  << infoLog << std::endl;
         return 0;
     }
 
@@ -174,7 +177,8 @@ GLuint LoadShaders(const char * vertex_sp,const char * fragment_sp) {
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+                  << infoLog << std::endl;
         return 0;
     }
     glDeleteShader(vertexShader);
