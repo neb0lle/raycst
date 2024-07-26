@@ -1,45 +1,76 @@
 #version 410 core
 
-out vec4 FragColor;
+out vec4 fragColor;
+
 uniform float Time;
 uniform vec2 Resolution;
 
-vec3 palette( float t ) {
-    vec3 a = vec3(0.5, 0.5, 0.5);
-    vec3 b = vec3(0.5, 0.5, 0.5);
-    vec3 c = vec3(1.0, 1.0, 1.0);
-    vec3 d = vec3(0.263,0.416,0.557);
-
-    return a + b*cos( 6.28318*(c*t+d) );
+mat2 rot2D(float a) {
+    return mat2(cos(a), -sin(a), sin(a), cos(a));
 }
 
-// void main(){
-// 	vec2 uv = (gl_FragCoord.xy * 2.0 - Resolution)/Resolution.y;
-//
-// 	float l = length(uv)+0.5;
-//
-//     FragColor = vec4(l, 1.0-l, 0.0, 1.0);
-// }
+vec3 palette(float t) {
+    return 0.5 + 0.5 * cos(6.28318 * (t + vec3(0.3, 0.416, 0.557)));
+}
 
-void main(){
-	vec2 uv = gl_FragCoord.xy/Resolution * 2.0 - 1.0;
-    vec2 uv0 = uv;
-    vec3 finalColor = vec3(0.0);
+float sdOctahedron(vec3 p, float s) {
+    p = abs(p);
+    return (p.x + p.y + p.z - s) * 0.57735027;
+}
+float sdSphere(vec3 p, float s) {
+    return length(p) - s;
+}
 
-    for (float i = 0.0; i < 4.0; i++) {
-        uv = fract(uv * 1.5) - 0.5;
+float sdTorus(vec3 p, vec2 t) {
+    vec2 q = vec2(length(p.xy) - t.x, p.z);
+    return length(q) - t.y;
+}
 
-        float d = length(uv) * exp(-length(uv0));
+// Scene distance
+float map(vec3 p) {
+    p.z += Time * 0.4; // Forward movement
 
-        vec3 col = palette(length(uv0) + i*.4 + Time*.4);
+    // Space repetition
+    p.xy = fract(p.xy) - 0.5;     // spacing: 1
+    p.z = mod(p.z, 0.25) - 0.125; // spacing: 0.25
 
-        d = sin(d*8. + Time)/8.;
-        d = abs(d);
+    return sdSphere(p, 0.12); // Sphere
+    // Uncomment to use Octahedron instead
+    // return sdOctahedron(p, 0.15); // Octahedron
+}
 
-        d = pow(0.01 / d, 1.2);
+void main() {
+    vec2 uv = (gl_FragCoord.xy * 2.0 - Resolution.xy) / Resolution.y;
 
-        finalColor += col * d;
+	vec2 uPos = vec2(0.5,0.5);
+
+    vec2 m = vec2(cos(Time * 0.2 * uPos.x), sin(Time * 0.2 * uPos.y)); // auto
+
+    // Initialization
+    vec3 ro = vec3(0.0, 0.0, -3.0);         // ray origin
+    vec3 rd = normalize(vec3(uv, 1.0)); // ray direction
+    vec3 col = vec3(0.0);               // final pixel color
+
+    float t = 0.0; // total distance travelled
+
+    int i; // Raymarching
+    for (i = 0; i < 80; i++) {
+        vec3 p = ro + rd * t; // position along the ray
+
+        p.xy *= rot2D(t * 0.15 * m.x);     // rotate ray around z-axis
+
+        p.y += sin(t * (m.y + 1.0) * 0.5) * 0.35;  // wiggle ray
+        p.x += cos(t * (m.x + 1.0) * 0.5) * 0.35;  // wiggle ray
+
+        float d = map(p);     // current distance to the scene
+
+        t += d;               // "march" the ray
+
+        if (d < 0.001 || t > 100.0) break; // early stop
     }
 
-    FragColor = vec4(finalColor, 1.0);
+    // Coloring
+    // col = palette(t * 0.02 + float(i) * 0.005);
+    col = palette(t * 0.001 + float(i) * 0.005);
+    fragColor = vec4(col, 1.0);
 }
